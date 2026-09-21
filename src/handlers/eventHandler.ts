@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { ClientEvents } from "discord.js";
 import type { BotClient } from "../client";
+import { isRuntimeModuleFile } from "../utils/runtimeFiles";
 
 interface BotEvent<K extends keyof ClientEvents = keyof ClientEvents> {
   name: K;
@@ -11,9 +12,7 @@ interface BotEvent<K extends keyof ClientEvents = keyof ClientEvents> {
 
 export async function loadEvents(client: BotClient): Promise<void> {
   const eventsPath = path.join(__dirname, "..", "events");
-  const eventFiles = fs
-    .readdirSync(eventsPath)
-    .filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
+  const eventFiles = fs.readdirSync(eventsPath).filter(isRuntimeModuleFile);
 
   for (const file of eventFiles) {
     const filePath = path.join(eventsPath, file);

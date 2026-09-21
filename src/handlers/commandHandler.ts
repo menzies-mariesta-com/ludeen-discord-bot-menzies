@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { BotClient } from "../client";
 import type { SlashCommand } from "../types/command";
+import { isRuntimeModuleFile } from "../utils/runtimeFiles";
 
 export async function loadCommands(client: BotClient): Promise<void> {
   const commandsPath = path.join(__dirname, "..", "commands");
@@ -13,7 +14,7 @@ export async function loadCommands(client: BotClient): Promise<void> {
     const categoryPath = path.join(commandsPath, category.name);
     const commandFiles = fs
       .readdirSync(categoryPath)
-      .filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
+      .filter(isRuntimeModuleFile);
 
     for (const file of commandFiles) {
       const filePath = path.join(categoryPath, file);

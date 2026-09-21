@@ -3,6 +3,7 @@ import path from "node:path";
 import { REST, Routes } from "discord.js";
 import { config } from "./config";
 import type { SlashCommand } from "./types/command";
+import { isRuntimeModuleFile } from "./utils/runtimeFiles";
 
 async function loadCommandData() {
   const commands = [];
@@ -15,7 +16,7 @@ async function loadCommandData() {
     const categoryPath = path.join(commandsPath, category.name);
     const commandFiles = fs
       .readdirSync(categoryPath)
-      .filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
+      .filter(isRuntimeModuleFile);
 
     for (const file of commandFiles) {
       const filePath = path.join(categoryPath, file);
