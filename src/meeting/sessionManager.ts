@@ -10,9 +10,7 @@ import {
 } from "discord.js";
 import {
   EndBehaviorType,
-  entersState,
   getVoiceConnection,
-  joinVoiceChannel,
   VoiceConnectionStatus,
   type VoiceConnection,
 } from "@discordjs/voice";
@@ -21,6 +19,7 @@ import { resolveMeetingRecordChannel } from "./channels";
 import { compressMeetingPcm } from "./compress";
 import { countHumansInVoice } from "./permissions";
 import { PcmMixer } from "./recorder";
+import { joinVoiceChannelReady } from "../voice/join";
 
 const EMPTY_STOP_MS = 3 * 60 * 1000;
 
@@ -167,21 +166,18 @@ export async function startRecording(options: {
   const pcmPath = path.join(workDir, "meeting.pcm");
   const mixer = new PcmMixer(pcmPath);
 
-  const connection = joinVoiceChannel({
-    channelId: voiceChannel.id,
-    guildId: voiceChannel.guild.id,
-    adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-    selfDeaf: false,
-    selfMute: true,
-  });
-
+  let connection: VoiceConnection;
   try {
-    await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
-  } catch {
-    connection.destroy();
+    connection = await joinVoiceChannelReady(voiceChannel, {
+      selfDeaf: false,
+      selfMute: true,
+    });
+  } catch (error) {
     await mixer.close().catch(() => undefined);
-    await fs.promises.rm(workDir, { recursive: true, force: true }).catch(() => undefined);
-    throw new Error("Failed to join the voice channel in time.");
+    await fs.promises
+      .rm(workDir, { recursive: true, force: true })
+      .catch(() => undefined);
+    throw error;
   }
 
   const session: MeetingRecordingSession = {

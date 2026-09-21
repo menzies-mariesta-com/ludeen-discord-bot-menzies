@@ -1,14 +1,13 @@
 import type { Client, VoiceBasedChannel } from "discord.js";
 import {
   AudioPlayerStatus,
-  entersState,
-  joinVoiceChannel,
   VoiceConnectionStatus,
   type AudioPlayer,
   type VoiceConnection,
 } from "@discordjs/voice";
 import { config } from "../config";
 import { countHumansInVoice } from "../meeting/permissions";
+import { joinVoiceChannelReady } from "../voice/join";
 import {
   createLofiPlayer,
   nextStreamIndex,
@@ -117,20 +116,15 @@ export async function startLofi(options: {
       : 0;
 
   const player = createLofiPlayer();
-  const connection = joinVoiceChannel({
-    channelId: voiceChannel.id,
-    guildId,
-    adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-    selfDeaf: true,
-    selfMute: false,
-  });
-
+  let connection: VoiceConnection;
   try {
-    await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
-  } catch {
-    connection.destroy();
+    connection = await joinVoiceChannelReady(voiceChannel, {
+      selfDeaf: true,
+      selfMute: false,
+    });
+  } catch (error) {
     player.stop(true);
-    throw new Error("Failed to join the voice channel in time.");
+    throw error;
   }
 
   connection.subscribe(player);
