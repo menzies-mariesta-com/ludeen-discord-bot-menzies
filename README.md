@@ -157,7 +157,9 @@ Records audio from **meeting*** voice channels and posts a compressed file to th
 
 **Intents:** enable **Server Members** is not required; enable **Guild Voice States** (Gateway intent) in the Discord Developer Portal.
 
-**ffmpeg:** required for compression. Railway installs it via [`nixpacks.toml`](nixpacks.toml). Locally: `sudo apt install ffmpeg` (or equivalent).
+**ffmpeg:** required for compression and stream playback. Railway installs it via [`nixpacks.toml`](nixpacks.toml). Locally: `sudo apt install ffmpeg` (or equivalent).
+
+**Node:** Railway is pinned to **Node 20** (see `.nvmrc` / `nixpacks.toml`). Voice uses `opusscript` + `libsodium-wrappers` so native C++ builds are not required on deploy.
 
 **Large files:** set `MEETING_MAX_UPLOAD_MB` (default 24). After compressing to Ogg Opus, if the file is still over that limit, Ludeen splits it into sequential parts and posts each to `meeting-record*`.
 
