@@ -137,34 +137,41 @@ export async function refreshBoardsForGithubUsers(
   ];
 
   for (const username of unique) {
-    const links = await db
-      .select()
-      .from(userLinks)
-      .where(eq(userLinks.githubUsername, username));
-
-    for (const link of links) {
-      const board = await db
+    try {
+      const links = await db
         .select()
-        .from(userTaskBoards)
-        .where(eq(userTaskBoards.discordUserId, link.discordUserId))
-        .limit(1);
+        .from(userLinks)
+        .where(eq(userLinks.githubUsername, username));
 
-      if (!board[0]) continue;
+      for (const link of links) {
+        const board = await db
+          .select()
+          .from(userTaskBoards)
+          .where(eq(userTaskBoards.discordUserId, link.discordUserId))
+          .limit(1);
 
-      try {
-        const parent = await client.channels.fetch(board[0].parentChannelId);
-        if (!parent || !parent.isTextBased() || parent.isDMBased()) continue;
-        await openOrRefreshTaskBoard(
-          client,
-          link.discordUserId,
-          parent as GuildTextBasedChannel,
-        );
-      } catch (error) {
-        console.error(
-          `[tasks] Failed to refresh board for ${link.discordUserId}:`,
-          error,
-        );
+        if (!board[0]) continue;
+
+        try {
+          const parent = await client.channels.fetch(board[0].parentChannelId);
+          if (!parent || !parent.isTextBased() || parent.isDMBased()) continue;
+          await openOrRefreshTaskBoard(
+            client,
+            link.discordUserId,
+            parent as GuildTextBasedChannel,
+          );
+        } catch (error) {
+          console.error(
+            `[tasks] Failed to refresh board for ${link.discordUserId}:`,
+            error,
+          );
+        }
       }
+    } catch (error) {
+      console.error(
+        `[tasks] Failed to refresh boards for @${username}:`,
+        error,
+      );
     }
   }
 }

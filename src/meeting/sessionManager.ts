@@ -212,7 +212,12 @@ export async function startRecording(options: {
         void stopRecording({
           client,
           voiceChannelId: voiceChannel.id,
-          reason: "Voice connection lost — saving recording.",
+          reason: "Voice connection lost: saving recording.",
+        }).catch((error) => {
+          console.error(
+            "[meeting] Failed to stop after voice loss:",
+            error,
+          );
         });
       }
     }

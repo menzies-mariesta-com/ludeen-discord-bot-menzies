@@ -24,10 +24,16 @@ export async function loadEvents(client: BotClient): Promise<void> {
       continue;
     }
 
+    const run = (...args: Parameters<typeof event.execute>) => {
+      void Promise.resolve(event.execute(...args)).catch((error) => {
+        console.error(`[events] Error in ${String(event.name)}:`, error);
+      });
+    };
+
     if (event.once) {
-      client.once(event.name, (...args) => void event.execute(...args));
+      client.once(event.name, run);
     } else {
-      client.on(event.name, (...args) => void event.execute(...args));
+      client.on(event.name, run);
     }
 
     console.log(`[events] Loaded ${event.name}${event.once ? " (once)" : ""}`);

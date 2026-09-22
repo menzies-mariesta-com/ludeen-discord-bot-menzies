@@ -234,7 +234,15 @@ const command: SlashCommand = {
         await interaction.editReply({ embeds: [embed] });
 
         if (assignees?.length) {
-          void refreshBoardsForGithubUsers(interaction.client, assignees);
+          void refreshBoardsForGithubUsers(
+            interaction.client,
+            assignees,
+          ).catch((error) => {
+            console.error(
+              "[tasks] Background board refresh failed:",
+              error,
+            );
+          });
         }
         return;
       }
@@ -301,7 +309,15 @@ const command: SlashCommand = {
         await interaction.editReply({ embeds: [embed] });
 
         if (assignees?.length) {
-          void refreshBoardsForGithubUsers(interaction.client, assignees);
+          void refreshBoardsForGithubUsers(
+            interaction.client,
+            assignees,
+          ).catch((error) => {
+            console.error(
+              "[tasks] Background board refresh failed:",
+              error,
+            );
+          });
         }
         return;
       }

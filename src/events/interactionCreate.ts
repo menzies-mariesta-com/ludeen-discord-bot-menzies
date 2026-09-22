@@ -24,10 +24,17 @@ export default {
         ephemeral: true,
       };
 
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp(message);
-      } else {
-        await interaction.reply(message);
+      try {
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp(message);
+        } else {
+          await interaction.reply(message);
+        }
+      } catch (replyError) {
+        console.error(
+          `Failed to send error reply for /${interaction.commandName}:`,
+          replyError,
+        );
       }
     }
   },

@@ -164,6 +164,8 @@ export async function startLofi(options: {
         void stopLofi({
           guildId,
           reason: "Voice connection lost.",
+        }).catch((error) => {
+          console.error("[lofi] Failed to stop after voice loss:", error);
         });
       }
     }

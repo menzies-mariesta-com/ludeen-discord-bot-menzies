@@ -3,16 +3,23 @@ import { config } from "./config";
 import { BotClient } from "./client";
 import { loadCommands } from "./handlers/commandHandler";
 import { loadEvents } from "./handlers/eventHandler";
-import { db } from "./db";
+import { runMigrations } from "./db/migrate";
 import { startWebhookServer } from "./webhooks/server";
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[process] Unhandled promise rejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("[process] Uncaught exception:", error);
+  process.exit(1);
+});
 
 async function waitUntilReady(client: BotClient): Promise<void> {
   if (client.isReady()) return;
 
   await new Promise<void>((resolve) => {
-    const done = () => resolve();
-    client.once("clientReady", done);
-    client.once("ready", done);
+    client.once("clientReady", () => resolve());
   });
 }
 
@@ -25,9 +32,7 @@ async function initVoiceCrypto(): Promise<void> {
 }
 
 async function main() {
-  // Touch the DB client so connection config is validated at boot.
-  void db;
-
+  await runMigrations();
   await initVoiceCrypto();
 
   const client = new BotClient();
